@@ -1,18 +1,32 @@
 import { useEffect, useState } from "react";
-import useConversation from "../zustand/useConversation";
 import toast from "react-hot-toast";
+import useConversation from "../zustand/useConversation";
 
 const useGetMessages = () => {
 	const [loading, setLoading] = useState(false);
-	const { messages, setMessages, selectedConversation } = useConversation();
+	const [messages, setMessages] = useState([]);
+	const { selectedConversation } = useConversation();
 
 	useEffect(() => {
 		const getMessages = async () => {
+			if (!selectedConversation?._id) return;
+
 			setLoading(true);
 			try {
-				const res = await fetch(`/api/messages/${selectedConversation._id}`);
+				const API_BASE_URL =
+					import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
+				const res = await fetch(
+					`${API_BASE_URL}/api/messages/${selectedConversation._id}`,
+					{ credentials: "include" }
+				);
+
 				const data = await res.json();
-				if (data.error) throw new Error(data.error);
+
+				if (!res.ok) {
+					throw new Error(data.error || "Failed to load messages");
+				}
+
 				setMessages(data);
 			} catch (error) {
 				toast.error(error.message);
@@ -21,9 +35,10 @@ const useGetMessages = () => {
 			}
 		};
 
-		if (selectedConversation?._id) getMessages();
-	}, [selectedConversation?._id, setMessages]);
+		getMessages();
+	}, [selectedConversation?._id]);
 
-	return { messages, loading };
+	return { loading, messages };
 };
+
 export default useGetMessages;

@@ -13,18 +13,17 @@ const useGetMessages = () => {
 
 			setLoading(true);
 			try {
-				const API_BASE_URL =
-					import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-
 				const res = await fetch(
-					`${API_BASE_URL}/api/messages/${selectedConversation._id}`,
-					{ credentials: "include" }
+					`${import.meta.env.VITE_API_BASE_URL}/api/messages/${selectedConversation._id}`,
+					{
+						credentials: "include",
+					}
 				);
 
 				const data = await res.json();
 
 				if (!res.ok) {
-					throw new Error(data.error || "Failed to load messages");
+					throw new Error(data.error || "Failed to fetch messages");
 				}
 
 				setMessages(data);
@@ -36,9 +35,9 @@ const useGetMessages = () => {
 		};
 
 		getMessages();
-	}, [selectedConversation?._id]);
+	}, [selectedConversation]);
 
-	return { loading, messages };
+	return { messages, loading };
 };
 
 export default useGetMessages;

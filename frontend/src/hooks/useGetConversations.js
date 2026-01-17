@@ -8,23 +8,34 @@ const useGetConversations = () => {
 	useEffect(() => {
 		const getConversations = async () => {
 			setLoading(true);
+
 			try {
 				const res = await fetch(
 					`${import.meta.env.VITE_API_BASE_URL}/api/users`,
 					{
-						credentials: "include",
+						method: "GET",
+						credentials: "include", // ✅ REQUIRED to send cookies
+						headers: {
+							"Content-Type": "application/json",
+						},
 					}
 				);
+
+				// ❌ If user is not authenticated, backend returns 401
+				if (res.status === 401) {
+					throw new Error("Please login again");
+				}
 
 				const data = await res.json();
 
 				if (!res.ok) {
-					throw new Error(data.error || "Failed to fetch users");
+					throw new Error(data?.error || "Failed to fetch users");
 				}
 
 				setConversations(data);
 			} catch (error) {
-				toast.error(error.message);
+				console.error("Error fetching conversations:", error);
+				toast.error(error.message || "Something went wrong");
 			} finally {
 				setLoading(false);
 			}

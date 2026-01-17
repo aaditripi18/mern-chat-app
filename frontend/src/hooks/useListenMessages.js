@@ -1,23 +1,30 @@
 import { useEffect } from "react";
-
 import { useSocketContext } from "../context/SocketContext";
 import useConversation from "../zustand/useConversation";
 
-import notificationSound from "../assets/sounds/notification.mp3";
-
 const useListenMessages = () => {
 	const { socket } = useSocketContext();
-	const { messages, setMessages } = useConversation();
+	const { messages, setMessages, selectedConversation } = useConversation();
 
 	useEffect(() => {
-		socket?.on("newMessage", (newMessage) => {
-			newMessage.shouldShake = true;
-			const sound = new Audio(notificationSound);
-			sound.play();
-			setMessages([...messages, newMessage]);
-		});
+		if (!socket) return;
 
-		return () => socket?.off("newMessage");
-	}, [socket, setMessages, messages]);
+		const handleNewMessage = (newMessage) => {
+			// 🔥 Only add message if it belongs to the current conversation
+			if (
+				newMessage.senderId === selectedConversation?._id ||
+				newMessage.receiverId === selectedConversation?._id
+			) {
+				setMessages((prevMessages) => [...prevMessages, newMessage]);
+			}
+		};
+
+		socket.on("newMessage", handleNewMessage);
+
+		return () => {
+			socket.off("newMessage", handleNewMessage);
+		};
+	}, [socket, selectedConversation, setMessages]);
 };
+
 export default useListenMessages;

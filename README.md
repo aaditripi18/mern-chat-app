@@ -1,37 +1,47 @@
-# MERN Stack Project: Build and Deploy a Real Time Chat App | JWT, Socket.io
+# 💬 MERN Real-Time Chat Application
 
-![Demo App](https://i.ibb.co/fXmZdnz/Screenshot-10.png)
+A full-stack real-time chat application built using the **MERN stack** with **Socket.io**.  
+Supports secure authentication, real-time messaging, and online user presence.
 
-[Video Tutorial on Youtube](https://youtu.be/HwCqsOis894)
+---
 
-Some Features:
+## 🚀 Live Demo
 
--   🌟 Tech stack: MERN + Socket.io + TailwindCSS + Daisy UI
--   🎃 Authentication && Authorization with JWT
--   👾 Real-time messaging with Socket.io
--   🚀 Online user status (Socket.io and React Context)
--   👌 Global state management with Zustand
--   🐞 Error handling both on the server and on the client
--   ⭐ At the end Deployment like a pro for FREE!
--   ⏳ And much more!
+- **Frontend (Vercel):** https://your-vercel-url.vercel.app
+- **Backend (Render):** https://your-render-url.onrender.com
 
-### Setup .env file
+---
 
-```js
-PORT=...
-MONGO_DB_URI=...
-JWT_SECRET=...
-NODE_ENV=...
-```
+## ✨ Features
 
-### Build the app
+- 🔐 JWT Authentication with HttpOnly Cookies
+- 💬 Real-time messaging using Socket.io
+- 🟢 Online / Offline user status
+- 🔍 User search and conversations
+- 🧠 Global state management with Zustand
+- 🎨 Responsive UI using Tailwind CSS
+- 🌐 Secure CORS configuration
+- ☁️ Deployed on Vercel & Render
 
-```shell
-npm run build
-```
+---
 
-### Start the app
+## 🛠 Tech Stack
 
-```shell
-npm start
-```
+### Frontend
+- React (Vite)
+- Tailwind CSS
+- Zustand
+- Socket.io Client
+
+### Backend
+- Node.js
+- Express.js
+- MongoDB (Atlas)
+- Socket.io
+- JWT Authentication
+- Cookie-parser
+
+---
+
+## 📂 Project Structure
+

@@ -44,26 +44,8 @@ Supports secure authentication, real-time messaging, and online user presence.
 ---
 
 ## 📂 Project Structure
-mern-chat-app/
-│
-├── backend/
-│ ├── controllers/
-│ ├── routes/
-│ ├── models/
-│ ├── socket/
-│ ├── middleware/
-│ └── server.js
-│
-├── frontend/
-│ ├── src/
-│ │ ├── components/
-│ │ ├── hooks/
-│ │ ├── context/
-│ │ ├── zustand/
-│ │ └── pages/
-│ └── main.jsx
-│
-└── README.md
+<img width="529" height="922" alt="image" src="https://github.com/user-attachments/assets/862fcf0d-b515-46ce-af75-6fd07a36da15" />
+
 
 
 ---

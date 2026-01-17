@@ -5,12 +5,10 @@ import { Server } from "socket.io";
 
 const app = express();
 
-/* ✅ CORS (supports multiple frontend URLs) */
+/* ✅ SAFE CORS (Render + Vercel friendly) */
 app.use(
 	cors({
-		origin: process.env.ALLOWED_ORIGINS
-			? process.env.ALLOWED_ORIGINS.split(",")
-			: "*",
+		origin: true, // 🔥 allow requesting origin
 		credentials: true,
 	})
 );
@@ -21,14 +19,11 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
 	cors: {
-		origin: process.env.ALLOWED_ORIGINS
-			? process.env.ALLOWED_ORIGINS.split(",")
-			: "*",
+		origin: true,
 		credentials: true,
 	},
 });
 
-/* 🔥 Map userId -> socketId */
 const userSocketMap = {};
 
 export const getReceiverSocketId = (receiverId) => {
@@ -40,10 +35,9 @@ io.on("connection", (socket) => {
 
 	if (userId) {
 		userSocketMap[userId] = socket.id;
-		socket.join(userId); // ✅ USER JOINS THEIR OWN ROOM
+		socket.join(userId);
 	}
 
-	/* 🔥 Send online users to everyone */
 	io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
 	socket.on("disconnect", () => {

@@ -4,8 +4,7 @@ import useConversation from "../zustand/useConversation";
 
 const useGetMessages = () => {
 	const [loading, setLoading] = useState(false);
-	const [messages, setMessages] = useState([]);
-	const { selectedConversation } = useConversation();
+	const { selectedConversation, setMessages } = useConversation();
 
 	useEffect(() => {
 		const getMessages = async () => {
@@ -15,9 +14,7 @@ const useGetMessages = () => {
 			try {
 				const res = await fetch(
 					`${import.meta.env.VITE_API_BASE_URL}/api/messages/${selectedConversation._id}`,
-					{
-						credentials: "include",
-					}
+					{ credentials: "include" }
 				);
 
 				const data = await res.json();
@@ -26,6 +23,7 @@ const useGetMessages = () => {
 					throw new Error(data.error || "Failed to fetch messages");
 				}
 
+				// 🔥 STORE IN ZUSTAND (single source of truth)
 				setMessages(data);
 			} catch (error) {
 				toast.error(error.message);
@@ -35,9 +33,9 @@ const useGetMessages = () => {
 		};
 
 		getMessages();
-	}, [selectedConversation]);
+	}, [selectedConversation, setMessages]);
 
-	return { messages, loading };
+	return { loading };
 };
 
 export default useGetMessages;

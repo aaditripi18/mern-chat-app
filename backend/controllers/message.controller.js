@@ -1,20 +1,25 @@
 import Conversation from "../models/conversation.model.js";
 import Message from "../models/message.model.js";
-import { io, getReceiverSocketId } from "../socket/socket.js";
+import { io } from "../socket/socket.js";
 
 export const sendMessage = async (req, res) => {
 	try {
 		const { message } = req.body;
-		const { id: receiverId } = req.params;
+		const receiverId = req.params.id;
 		const senderId = req.user._id;
 
+		// 🔥 ALWAYS find conversation by both participants
 		let conversation = await Conversation.findOne({
-			participants: { $all: [senderId, receiverId] },
+			participants: {
+				$all: [senderId, receiverId],
+			},
 		});
 
+		// 🔥 CREATE conversation if it does not exist
 		if (!conversation) {
 			conversation = await Conversation.create({
 				participants: [senderId, receiverId],
+				messages: [],
 			});
 		}
 
@@ -26,39 +31,37 @@ export const sendMessage = async (req, res) => {
 
 		conversation.messages.push(newMessage._id);
 
-		await Promise.all([
-			conversation.save(),
-			newMessage.save(),
-		]);
+		await conversation.save();
 
-		/* 🔥 REAL-TIME DELIVERY */
-		const receiverSocketId = getReceiverSocketId(receiverId);
-
-		if (receiverSocketId) {
-			io.to(receiverId).emit("newMessage", newMessage);
-		}
+		// 🔥 SEND REAL-TIME EVENT
+		io.to(receiverId.toString()).emit("newMessage", newMessage);
+		io.to(senderId.toString()).emit("newMessage", newMessage);
 
 		res.status(201).json(newMessage);
 	} catch (error) {
-		console.error("Error in sendMessage controller:", error.message);
+		console.error("sendMessage error:", error);
 		res.status(500).json({ error: "Internal server error" });
 	}
 };
 
 export const getMessages = async (req, res) => {
 	try {
-		const { id: userToChatId } = req.params;
+		const receiverId = req.params.id;
 		const senderId = req.user._id;
 
 		const conversation = await Conversation.findOne({
-			participants: { $all: [senderId, userToChatId] },
+			participants: {
+				$all: [senderId, receiverId],
+			},
 		}).populate("messages");
 
-		if (!conversation) return res.status(200).json([]);
+		if (!conversation) {
+			return res.status(200).json([]);
+		}
 
 		res.status(200).json(conversation.messages);
 	} catch (error) {
-		console.error("Error in getMessages controller:", error.message);
+		console.error("getMessages error:", error);
 		res.status(500).json({ error: "Internal server error" });
 	}
 };

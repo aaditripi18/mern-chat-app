@@ -1,6 +1,3 @@
-console.log("🔥 SOCKET.JS UPDATED — DYNAMIC CORS ACTIVE");
-
-
 import express from "express";
 import http from "http";
 import cors from "cors";
@@ -8,63 +5,45 @@ import { Server } from "socket.io";
 
 const app = express();
 
-/* ================================
-   ✅ DYNAMIC CORS (VERCEL-SAFE)
-   ================================ */
+/* ✅ CORS (supports multiple frontend URLs) */
 app.use(
 	cors({
-		origin: (origin, callback) => {
-			// Allow Postman / server-to-server
-			if (!origin) return callback(null, true);
-
-			// Allow ANY Vercel deployment of your project
-			if (
-				origin.endsWith(".vercel.app")
-			) {
-				return callback(null, true);
-			}
-
-			return callback(new Error("Not allowed by CORS"));
-		},
+		origin: process.env.ALLOWED_ORIGINS
+			? process.env.ALLOWED_ORIGINS.split(",")
+			: "*",
 		credentials: true,
 	})
 );
 
 app.use(express.json());
-app.options("*", cors());
 
 const server = http.createServer(app);
 
-/* ================================
-   ✅ SOCKET.IO CORS (MATCHES API)
-   ================================ */
 const io = new Server(server, {
 	cors: {
-		origin: (origin, callback) => {
-			if (!origin) return callback(null, true);
-			if (origin.endsWith(".vercel.app")) {
-				return callback(null, true);
-			}
-			return callback(new Error("Not allowed by CORS"));
-		},
+		origin: process.env.ALLOWED_ORIGINS
+			? process.env.ALLOWED_ORIGINS.split(",")
+			: "*",
 		credentials: true,
 	},
 });
 
-/* ================================
-   SOCKET LOGIC
-   ================================ */
+/* 🔥 Map userId -> socketId */
 const userSocketMap = {};
 
-export const getReceiverSocketId = (receiverId) => userSocketMap[receiverId];
+export const getReceiverSocketId = (receiverId) => {
+	return userSocketMap[receiverId];
+};
 
 io.on("connection", (socket) => {
 	const userId = socket.handshake.query.userId;
 
 	if (userId) {
 		userSocketMap[userId] = socket.id;
+		socket.join(userId); // ✅ USER JOINS THEIR OWN ROOM
 	}
 
+	/* 🔥 Send online users to everyone */
 	io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
 	socket.on("disconnect", () => {

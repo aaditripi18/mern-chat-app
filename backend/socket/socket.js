@@ -1,3 +1,6 @@
+console.log("🔥 SOCKET.JS UPDATED — DYNAMIC CORS ACTIVE");
+
+
 import express from "express";
 import http from "http";
 import cors from "cors";
@@ -5,42 +8,67 @@ import { Server } from "socket.io";
 
 const app = express();
 
-/* ✅ CORS MUST BE HERE */
+/* ================================
+   ✅ DYNAMIC CORS (VERCEL-SAFE)
+   ================================ */
 app.use(
 	cors({
-		origin: "https://mern-chat-frontend-one-ivory.vercel.app",
+		origin: (origin, callback) => {
+			// Allow Postman / server-to-server
+			if (!origin) return callback(null, true);
+
+			// Allow ANY Vercel deployment of your project
+			if (
+				origin.endsWith(".vercel.app")
+			) {
+				return callback(null, true);
+			}
+
+			return callback(new Error("Not allowed by CORS"));
+		},
 		credentials: true,
 	})
 );
 
-/* ✅ JSON MUST BE HERE TOO */
 app.use(express.json());
-
-/* ✅ HANDLE PREFLIGHT */
 app.options("*", cors());
 
 const server = http.createServer(app);
 
+/* ================================
+   ✅ SOCKET.IO CORS (MATCHES API)
+   ================================ */
 const io = new Server(server, {
 	cors: {
-		origin: "https://mern-chat-frontend-one-ivory.vercel.app",
-		methods: ["GET", "POST"],
+		origin: (origin, callback) => {
+			if (!origin) return callback(null, true);
+			if (origin.endsWith(".vercel.app")) {
+				return callback(null, true);
+			}
+			return callback(new Error("Not allowed by CORS"));
+		},
 		credentials: true,
 	},
 });
 
+/* ================================
+   SOCKET LOGIC
+   ================================ */
 const userSocketMap = {};
 
 export const getReceiverSocketId = (receiverId) => userSocketMap[receiverId];
 
 io.on("connection", (socket) => {
 	const userId = socket.handshake.query.userId;
-	if (userId) userSocketMap[userId] = socket.id;
+
+	if (userId) {
+		userSocketMap[userId] = socket.id;
+	}
 
 	io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
 	socket.on("disconnect", () => {
-		delete userSocketMap[userId];
+		if (userId) delete userSocketMap[userId];
 		io.emit("getOnlineUsers", Object.keys(userSocketMap));
 	});
 });

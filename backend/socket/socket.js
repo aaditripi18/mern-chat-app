@@ -1,37 +1,45 @@
-import { Server } from "socket.io";
-import http from "http";
 import express from "express";
+import http from "http";
+import cors from "cors";
+import { Server } from "socket.io";
 
 const app = express();
+
+/* ✅ CORS MUST BE HERE */
+app.use(
+	cors({
+		origin: "https://mern-chat-frontend-one-ivory.vercel.app",
+		credentials: true,
+	})
+);
+
+/* ✅ JSON MUST BE HERE TOO */
+app.use(express.json());
+
+/* ✅ HANDLE PREFLIGHT */
+app.options("*", cors());
 
 const server = http.createServer(app);
 
 const io = new Server(server, {
 	cors: {
-		origin: process.env.FRONTEND_URL || "http://localhost:5173",
+		origin: "https://mern-chat-frontend-one-ivory.vercel.app",
 		methods: ["GET", "POST"],
 		credentials: true,
 	},
 });
 
-const userSocketMap = {}; // { userId: socketId }
+const userSocketMap = {};
 
-export const getReceiverSocketId = (receiverId) => {
-	return userSocketMap[receiverId];
-};
+export const getReceiverSocketId = (receiverId) => userSocketMap[receiverId];
 
 io.on("connection", (socket) => {
-	console.log("User connected:", socket.id);
-
 	const userId = socket.handshake.query.userId;
-	if (userId) {
-		userSocketMap[userId] = socket.id;
-	}
+	if (userId) userSocketMap[userId] = socket.id;
 
 	io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
 	socket.on("disconnect", () => {
-		console.log("User disconnected:", socket.id);
 		delete userSocketMap[userId];
 		io.emit("getOnlineUsers", Object.keys(userSocketMap));
 	});

@@ -5,13 +5,6 @@ Supports secure authentication, real-time messaging, and online user presence.
 
 ---
 
-## 🚀 Live Demo
-
-- **Frontend (Vercel):** https://your-vercel-url.vercel.app
-- **Backend (Render):** https://your-render-url.onrender.com
-
----
-
 ## ✨ Features
 
 - 🔐 JWT Authentication with HttpOnly Cookies
